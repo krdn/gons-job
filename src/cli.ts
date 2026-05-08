@@ -5,6 +5,7 @@ import { runAdd } from "./commands/add";
 import { runLs } from "./commands/ls";
 import { runDone } from "./commands/done";
 import { parseDate } from "./lib/parse-date";
+import { runMorning } from "./morning/index";
 
 const program = new Command();
 program
@@ -65,6 +66,13 @@ program
     } finally {
       db.close();
     }
+  });
+
+program
+  .command("morning", { isDefault: true })
+  .description("아침 의식 — 오늘 할 일을 고르기")
+  .action(async () => {
+    await runMorning();
   });
 
 program.parseAsync(process.argv).catch((err) => {
