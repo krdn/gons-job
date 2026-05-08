@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { openDb } from "./db/connection";
 import { runAdd } from "./commands/add";
 import { runLs } from "./commands/ls";
+import { runDone } from "./commands/done";
 import { parseDate } from "./lib/parse-date";
 
 const program = new Command();
@@ -43,6 +44,24 @@ program
         tag: opts.tag,
       });
       for (const l of lines) console.log(l);
+    } finally {
+      db.close();
+    }
+  });
+
+program
+  .command("done")
+  .description("task를 done으로 전이")
+  .argument("<id>", "task id")
+  .action((idStr: string) => {
+    const id = Number(idStr);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error(`유효하지 않은 id: ${idStr}`);
+    }
+    const db = openDb();
+    try {
+      runDone(db, id);
+      console.log(`#${id} done`);
     } finally {
       db.close();
     }
