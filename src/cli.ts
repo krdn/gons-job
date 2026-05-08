@@ -4,6 +4,9 @@ import { openDb } from "./db/connection";
 import { runAdd } from "./commands/add";
 import { runLs } from "./commands/ls";
 import { runDone } from "./commands/done";
+import { runTag } from "./commands/tag";
+import { runRm } from "./commands/rm";
+import { runSetDeadline } from "./commands/set-deadline";
 import { parseDate } from "./lib/parse-date";
 import { runMorning } from "./morning/index";
 
@@ -63,6 +66,62 @@ program
     try {
       runDone(db, id);
       console.log(`#${id} done`);
+    } finally {
+      db.close();
+    }
+  });
+
+program
+  .command("tag")
+  .description("task에 태그 토글")
+  .argument("<id>", "task id")
+  .argument("<name>", "태그 이름")
+  .action((idStr: string, name: string) => {
+    const id = Number(idStr);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error(`유효하지 않은 id: ${idStr}`);
+    }
+    const db = openDb();
+    try {
+      runTag(db, id, name);
+    } finally {
+      db.close();
+    }
+  });
+
+program
+  .command("rm")
+  .description("task 영구 삭제")
+  .argument("<id>", "task id")
+  .action((idStr: string) => {
+    const id = Number(idStr);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error(`유효하지 않은 id: ${idStr}`);
+    }
+    const db = openDb();
+    try {
+      runRm(db, id);
+      console.log(`#${id} 삭제됨`);
+    } finally {
+      db.close();
+    }
+  });
+
+const setCmd = program.command("set").description("set 하위 명령");
+setCmd
+  .command("deadline")
+  .description("task의 deadline 설정/해제")
+  .argument("<id>", "task id")
+  .argument("[date]", "ISO 8601 또는 +Nd/+Nw/tomorrow. 생략 시 deadline 제거")
+  .action((idStr: string, date: string | undefined) => {
+    const id = Number(idStr);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error(`유효하지 않은 id: ${idStr}`);
+    }
+    const dl = date ? parseDate(date) : null;
+    const db = openDb();
+    try {
+      runSetDeadline(db, id, dl);
     } finally {
       db.close();
     }
