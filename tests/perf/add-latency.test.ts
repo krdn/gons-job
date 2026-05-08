@@ -40,6 +40,7 @@ describe("job add latency", () => {
       times.push(ms);
     }
     const avg = times.reduce((a, b) => a + b, 0) / RUNS;
+    // 의도된 회귀 추적 출력 — 디버그가 아니라 trend 가시성용.
     console.log(`avg=${avg.toFixed(1)}ms`);
     expect(avg).toBeLessThanOrEqual(THRESHOLD_MS);
   }, 60_000); // 30회 × 최대 2초 정도 여유
